@@ -30,6 +30,19 @@ func (s *atomicIdService) getNext() uint64 {
 	return s.counter
 }
 
+type mutexIdService struct {
+	counter uint64
+}
+
+func (s *mutexIdService) getNext() uint64 {
+	mu.Lock() {
+		s.counter += 1
+	}
+	mu.Unlock()
+
+	return s.counter
+}
+
 func run(wg *sync.WaitGroup, s idService, label string) {
 	go func() {
 		for i := 0; i < 99999; i++ {
@@ -52,13 +65,15 @@ func run(wg *sync.WaitGroup, s idService, label string) {
 
 func main() {
 	var wg sync.WaitGroup
-	wg.Add(4)
+	wg.Add(6)
 
 	s1 := &basicIdService{}
 	s2 := &atomicIdService{}
+	s3 := &mutexIdService{}
 
-	run(&wg, s1, "basic")
+	run(&wg, s1, "basic ")
 	run(&wg, s2, "atomic")
+	run(&wg, s2, "mutex ")
 
 	fmt.Println("Waiting to finish...")
 	wg.Wait()
