@@ -7,7 +7,7 @@ import (
 const numTasks = 3
 
 func main() {
-	var done chan struct{}
+	done := make(chan struct{})
 	for i := 0; i < numTasks; i++ {
 		go func() {
 			fmt.Println("running task...")
