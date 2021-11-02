@@ -13,9 +13,9 @@ func main() {
 		"https://bradfieldcs.com/courses/databases/",
 	}
 	var wg sync.WaitGroup
+	wg.Add(len(urls))
 	for i := range urls {
 		go func(i int) {
-			wg.Add(1)
 			// Decrement the counter when the goroutine completes.
 			defer wg.Done()
 
