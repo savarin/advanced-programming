@@ -30,118 +30,86 @@ func (s *atomicIdService) getNext() uint64 {
 	return s.counter
 }
 
+type mutexIdService struct {
+	counter uint64
+	mu      sync.Mutex
+}
+
+func (s *mutexIdService) getNext() uint64 {
+	s.mu.Lock()
+	{
+		s.counter += 1
+	}
+	s.mu.Unlock()
+
+	return s.counter
+}
+
+type channelIdService struct {
+	counter chan uint64
+}
+
+func newChannelIdService() *channelIdService {
+	s := &channelIdService{
+		counter: make(chan uint64),
+	}
+
+	go func() {
+		var i uint64
+
+		for {
+			i += 1
+			s.counter <- i
+		}
+	}()
+
+	return s
+}
+
+func (s *channelIdService) getNext() uint64 {
+	return <-s.counter
+}
+
 func run(wg *sync.WaitGroup, s idService, label string) {
 	go func() {
-		for i := 0; i < 99999; i++ {
+		for i := 0; i < 999999; i++ {
 			s.getNext()
 		}
 
-		fmt.Printf("%s  1:%d\n", label, s.getNext())
+		fmt.Printf("1 %s:%d\n", label, s.getNext())
 		wg.Done()
 	}()
 
 	go func() {
-		for i := 0; i < 99999; i++ {
+		for i := 0; i < 999999; i++ {
 			s.getNext()
 		}
 
-		fmt.Printf("%s  2:%d\n", label, s.getNext())
+		fmt.Printf("2 %s:%d\n", label, s.getNext())
 		wg.Done()
 	}()
-}
-
-func runWithMutex(wg *sync.WaitGroup, mu *sync.Mutex, s idService) {
-	var c uint64
-
-	go func() {
-		for i := 0; i < 99999; i++ {
-			mu.Lock()
-			{
-				s.getNext()
-			}
-			mu.Unlock()
-		}
-
-		mu.Lock()
-		{
-			c = s.getNext()
-		}
-		mu.Unlock()
-
-		fmt.Printf("mutex   1:%d\n", c)
-		wg.Done()
-	}()
-
-	go func() {
-		for i := 0; i < 99999; i++ {
-			mu.Lock()
-			{
-				s.getNext()
-			}
-			mu.Unlock()
-		}
-
-		mu.Lock()
-		{
-			c = s.getNext()
-		}
-		mu.Unlock()
-
-		fmt.Printf("mutex   2:%d\n", c)
-		wg.Done()
-	}()
-}
-
-func runWithChannels(wg *sync.WaitGroup, s idService) {
-	ch1 := make(chan uint64)
-	ch2 := make(chan uint64)
-
-	go func() {
-		for i := 0; i < 100000; i++ {
-			ch1 <- s.getNext()
-		}
-
-		wg.Done()
-	}()
-
-	go func() {
-		for i := 0; i < 100000; i++ {
-			ch2 <- s.getNext()
-		}
-
-		wg.Done()
-	}()
-
-	var c uint64
-
-	for i := 0; i < 100000; i++ {
-		c = <-ch1
-	}
-
-	fmt.Printf("channel 1:%d\n", c)
-
-	for i := 0; i < 100000; i++ {
-		c = <-ch2
-	}
-
-	fmt.Printf("channel 2:%d\n", c)
 }
 
 func main() {
 	var wg sync.WaitGroup
 	wg.Add(8)
 
-	var mu sync.Mutex
-
-	s1 := &basicIdService{}
-	s2 := &atomicIdService{}
-	s3 := &basicIdService{}
-	s4 := &basicIdService{}
-
-	run(&wg, s1, "basic ")
-	run(&wg, s2, "atomic")
-	runWithMutex(&wg, &mu, s3)
-	runWithChannels(&wg, s4)
+	go func() {
+		s1 := &basicIdService{}
+		run(&wg, s1, "basic  ")
+	}()
+	go func() {
+		s2 := &atomicIdService{}
+		run(&wg, s2, "atomic ")
+	}()
+	go func() {
+		s3 := &mutexIdService{}
+		run(&wg, s3, "mutex  ")
+	}()
+	go func() {
+		s4 := newChannelIdService()
+		run(&wg, s4, "channel")
+	}()
 
 	fmt.Println("Waiting to finish...")
 	wg.Wait()
