@@ -8,7 +8,7 @@ func main() {
 	done := make(chan struct{}, 1)
 	go func() {
 		fmt.Println("performing initialization...")
-		done <- struct{}{}		
+		done <- struct{}{}
 	}()
 
 	<-done

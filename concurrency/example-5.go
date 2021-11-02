@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"math/rand"
+	"runtime"
 	"time"
 )
 
@@ -29,7 +30,7 @@ func query(endpoint string) string {
 // response (this approach increases the amount of traffic but
 // significantly improves "tail latency")
 func parallelQuery(endpoints []string) string {
-	results := make(chan string)
+	results := make(chan string, len(endpoints))
 	for i := range endpoints {
 		go func(i int) {
 			results <- query(endpoints[i])
@@ -50,5 +51,6 @@ func main() {
 		fmt.Println(parallelQuery(endpoints))
 		delay := randomDelay(100)
 		time.Sleep(delay)
+		fmt.Println("number of goroutines: ", runtime.NumGoroutine())
 	}
 }
