@@ -71,23 +71,16 @@ func (s *channelIdService) getNext() uint64 {
 }
 
 func run(wg *sync.WaitGroup, s idService, label string) {
-	go func() {
-		for i := 0; i < 999999; i++ {
-			s.getNext()
-		}
+	for i := 0; i < 2; i++ {
+		go func(i int) {
+			for j := 0; j < 999999; j++ {
+				s.getNext()
+			}
 
-		fmt.Printf("1 %s:%d\n", label, s.getNext())
-		wg.Done()
-	}()
-
-	go func() {
-		for i := 0; i < 999999; i++ {
-			s.getNext()
-		}
-
-		fmt.Printf("2 %s:%d\n", label, s.getNext())
-		wg.Done()
-	}()
+			fmt.Printf("%d %s:%d\n", i, label, s.getNext())
+			wg.Done()
+		}(i)
+	}
 }
 
 func main() {
