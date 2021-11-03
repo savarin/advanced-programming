@@ -1,3 +1,9 @@
+/*
+Problem: Deadlock due to read lock acquisition attempted while already holding the lock.
+
+Solution: Introduce logging without locks, for use when lock already held.
+https://github.com/savarin/advanced-programming/commit/ce9071f0fd7bb207df07282e1ef5ef4fcae700e6#diff-d1b92de2d2079261b3abb4d275473f8ffefb9c723f42c8c56f72d385fb3abc7c
+*/
 package main
 
 import (

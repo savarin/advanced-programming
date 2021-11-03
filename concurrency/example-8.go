@@ -1,3 +1,9 @@
+/*
+Problem: Deadlock due attempt to acquire read lock already held.
+
+Solution: Remove need to acquire lock when lock already held.
+https://github.com/savarin/advanced-programming/commit/93bfc23b2639f428134a1ecc032cba10e70e1c47#diff-d1b92de2d2079261b3abb4d275473f8ffefb9c723f42c8c56f72d385fb3abc7c
+*/
 package main
 
 import (

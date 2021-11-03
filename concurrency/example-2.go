@@ -1,3 +1,9 @@
+/*
+Problem: Deadlock due to channel having nil value.
+
+Solution: Declare channel with make.
+https://github.com/savarin/advanced-programming/commit/162f366501d4de3c687a2a37f4e94c6cb7e7db02#diff-d1b92de2d2079261b3abb4d275473f8ffefb9c723f42c8c56f72d385fb3abc7c
+*/
 package main
 
 import (

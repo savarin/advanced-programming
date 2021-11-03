@@ -1,3 +1,11 @@
+/*
+Problem: Since there are 3 goroutines sending to a non-buffered channel, only one of the goroutines
+can perform the send operation. This causes the number of goroutines run to increase over time as
+the send-receive connection is not closed.
+
+Solution: Change to a channel with a buffer of size 3.
+https://github.com/savarin/advanced-programming/commit/6c5faa59d180cca5f05012105d1d120106cd9234#diff-d1b92de2d2079261b3abb4d275473f8ffefb9c723f42c8c56f72d385fb3abc7c
+*/
 package main
 
 import (

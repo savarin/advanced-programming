@@ -1,3 +1,11 @@
+/*
+Problem: Deadlock due to one goroutine acquires StateManager lock first and Consumer lock second,
+and another goroutine in the opposite ordering.
+
+Solution: Change lock acquisition ordering so that both acquire the Statemanager lock first and
+Consumer lock second.
+https://github.com/savarin/advanced-programming/commit/4a234a8aa3f2e020292a33cf55d20232543045df#diff-d1b92de2d2079261b3abb4d275473f8ffefb9c723f42c8c56f72d385fb3abc7c
+*/
 package main
 
 import (
