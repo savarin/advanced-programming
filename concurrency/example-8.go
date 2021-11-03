@@ -20,28 +20,35 @@ func newDbService(connection string) *dbService {
 
 func (d *dbService) logState() {
 	d.lock.RLock()
-	defer d.lock.RUnlock()
+	{
+		d.printState()
+	}
+	d.lock.RUnlock()
+}
 
+func (d *dbService) printState() {
 	fmt.Printf("connection %q is healthy\n", d.connection)
 }
 
 func (d *dbService) takeSnapshot() {
 	d.lock.RLock()
-	defer d.lock.RUnlock()
+	{
+		fmt.Printf("Taking snapshot over connection %q\n", d.connection)
 
-	fmt.Printf("Taking snapshot over connection %q\n", d.connection)
+		// Simulate slow operation
+		time.Sleep(time.Second)
 
-	// Simulate slow operation
-	time.Sleep(time.Second)
-
-	d.logState()
+		d.printState()
+	}
+	d.lock.RUnlock()
 }
 
 func (d *dbService) updateConnection(connection string) {
 	d.lock.Lock()
-	defer d.lock.Unlock()
-
-	d.connection = connection
+	{
+		d.connection = connection
+	}
+	d.lock.Unlock()
 }
 
 func main() {
