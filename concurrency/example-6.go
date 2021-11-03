@@ -19,20 +19,26 @@ func newCoordinator(leader string) *coordinator {
 
 func (c *coordinator) logState() {
 	c.lock.RLock()
-	defer c.lock.RUnlock()
+	{
+		c.printState()
+	}
+	c.lock.RUnlock()
+}
 
+func (c *coordinator) printState() {
 	fmt.Printf("leader = %q\n", c.leader)
 }
 
 func (c *coordinator) setLeader(leader string, shouldLog bool) {
 	c.lock.Lock()
-	defer c.lock.Unlock()
+	{
+		c.leader = leader
 
-	c.leader = leader
-
-	if shouldLog {
-		c.logState()
+		if shouldLog {
+			c.printState()
+		}
 	}
+	c.lock.Unlock()
 }
 
 func main() {
