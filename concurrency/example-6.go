@@ -25,6 +25,7 @@ func (c *coordinator) logState() {
 	c.lock.RUnlock()
 }
 
+// Assumes lock already acquired.
 func (c *coordinator) printState() {
 	fmt.Printf("leader = %q\n", c.leader)
 }

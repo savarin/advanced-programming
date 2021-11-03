@@ -14,11 +14,12 @@ type counter struct {
 	count int
 }
 
-func safeIncrement(lock sync.Mutex, c *counter) {
+func safeIncrement(lock *sync.Mutex, c *counter) {
 	lock.Lock()
-	defer lock.Unlock()
-
-	c.count += 1
+	{
+		c.count += 1
+	}
+	lock.Unlock()
 }
 
 func main() {
@@ -28,13 +29,13 @@ func main() {
 	}
 
 	var wg sync.WaitGroup
+	wg.Add(numGoroutines)
 	for i := 0; i < numGoroutines; i++ {
-		wg.Add(1)
 		go func() {
 			defer wg.Done()
 
 			for j := 0; j < numIncrements; j++ {
-				safeIncrement(globalLock, c)
+				safeIncrement(&globalLock, c)
 			}
 		}()
 	}
