@@ -63,8 +63,8 @@ func (s *StateManager) AddConsumer(c *Consumer) {
 func (s *StateManager) RemoveConsumer(c *Consumer) {
 	s.lock.Lock()
 	{
-		c.Terminate()
 		delete(s.consumers, c.id)
+		c.Terminate()
 	}
 	s.lock.Unlock()
 }
