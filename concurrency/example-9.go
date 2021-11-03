@@ -28,13 +28,12 @@ func (c *Consumer) GetState() string {
 
 func (c *Consumer) Terminate() {
 	c.lock.Lock()
-	defer c.lock.Unlock()
-
-	// You can imagine that this internal cleanup mutates the state
-	// of the Consumer
-	fmt.Printf("Performing internal cleanup for consumer %d\n", c.id)
-
-	c.s.RemoveConsumer(c.id)
+	{
+		// You can imagine that this internal cleanup mutates the state
+		// of the Consumer
+		fmt.Printf("Performing internal cleanup for consumer %d\n", c.id)
+	}
+	c.lock.Unlock()
 }
 
 type StateManager struct {
@@ -55,16 +54,19 @@ func NewStateManager(numConsumers int) *StateManager {
 
 func (s *StateManager) AddConsumer(c *Consumer) {
 	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	s.consumers[c.id] = c
+	{
+		s.consumers[c.id] = c
+	}
+	s.lock.Unlock()
 }
 
-func (s *StateManager) RemoveConsumer(id int) {
+func (s *StateManager) RemoveConsumer(c *Consumer) {
 	s.lock.Lock()
-	defer s.lock.Unlock()
-
-	delete(s.consumers, id)
+	{
+		c.Terminate()
+		delete(s.consumers, c.id)
+	}
+	s.lock.Unlock()
 }
 
 func (s *StateManager) GetConsumer(id int) *Consumer {
@@ -75,13 +77,17 @@ func (s *StateManager) GetConsumer(id int) *Consumer {
 }
 
 func (s *StateManager) PrintState() {
-	s.lock.RLock()
-	defer s.lock.RUnlock()
-
 	fmt.Println("Started PrintState")
-	for _, consumer := range s.consumers {
-		fmt.Println(consumer.GetState())
+
+	s.lock.RLock()
+	{
+		for _, consumer := range s.consumers {
+			fmt.Println(consumer.GetState())
+
+		}
 	}
+	s.lock.RUnlock()
+
 	fmt.Println("Done with PrintState")
 }
 
@@ -95,7 +101,7 @@ func main() {
 		defer wg.Done()
 
 		c := s.GetConsumer(0)
-		c.Terminate()
+		s.RemoveConsumer(c)
 	}()
 
 	wg.Add(1)
